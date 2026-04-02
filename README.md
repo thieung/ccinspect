@@ -30,18 +30,43 @@
 
 Works on **macOS**, **Linux**, and **Windows**.
 
-```bash
-# From source
-go install github.com/thieung/ccinspect/cmd/cli@latest
+### One-liner (recommended)
 
-# Or build locally
-git clone https://github.com/thieung/ccinspect.git
-cd ccinspect
-make build
-# Binary at ./bin/ccinspect
+**macOS / Linux:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/thieung/ccinspect/main/install.sh | sh
 ```
 
-> **Windows:** Requires [GNU Make](https://gnuwin32.sourceforge.net/packages/make.htm) or use `go build -o bin/ccinspect.exe ./cmd/cli` directly.
+**Windows (PowerShell):**
+
+```powershell
+irm https://raw.githubusercontent.com/thieung/ccinspect/main/install.ps1 | iex
+```
+
+### With Go
+
+```bash
+go install github.com/thieung/ccinspect/cmd/ccinspect@latest
+```
+
+### From source
+
+```bash
+git clone https://github.com/thieung/ccinspect.git
+cd ccinspect
+make install    # builds + copies to /usr/local/bin
+```
+
+### Uninstall
+
+```bash
+# If installed via install script or make install
+sudo rm /usr/local/bin/ccinspect
+
+# Windows
+Remove-Item "$env:LOCALAPPDATA\ccinspect" -Recurse
+```
 
 ## Quick Start
 
@@ -238,7 +263,7 @@ Contributions are welcome! Please open an issue first to discuss what you'd like
 # Development
 git clone https://github.com/thieung/ccinspect.git
 cd ccinspect
-make build
+make build    # binary at ./bin/ccinspect
 make test
 ```
 
