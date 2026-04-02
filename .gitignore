@@ -10,3 +10,4 @@ bin/
 .claude/
 plans/
 /cli
+.mcp.json

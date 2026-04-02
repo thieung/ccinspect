@@ -18,7 +18,7 @@ var (
 )
 
 // RenderInventoryTable prints the main scan summary table.
-func RenderInventoryTable(inv *model.Inventory) string {
+func RenderInventoryTable(inv *model.Inventory, titleText string, hideEmpty bool) string {
 	rows := [][]string{}
 	totalSkills, totalHooks, totalAgents, totalMCP := 0, 0, 0, 0
 
@@ -26,37 +26,45 @@ func RenderInventoryTable(inv *model.Inventory) string {
 	if inv.Global != nil {
 		g := inv.Global
 		s, h, a := len(g.Skills), len(g.Hooks), len(g.Agents)
-		totalSkills += s
-		totalHooks += h
-		totalAgents += a
-		rows = append(rows, []string{
-			"~/.claude (GLOBAL)", itoa(s), itoa(h), itoa(a), "-",
-		})
+		if !hideEmpty || s+h+a > 0 {
+			totalSkills += s
+			totalHooks += h
+			totalAgents += a
+			rows = append(rows, []string{
+				"~/.claude (GLOBAL)", itoa(s), itoa(h), itoa(a), "-",
+			})
+		}
 	}
 
-	// Sort projects by total entities (skills+hooks+mcp) descending
+	// Sort projects by total entities (skills+hooks+agents+mcp) descending
 	sorted := make([]*model.ProjectConfig, len(inv.Projects))
 	copy(sorted, inv.Projects)
 	sort.Slice(sorted, func(i, j int) bool {
-		ti := len(sorted[i].Skills) + len(sorted[i].Hooks) + len(sorted[i].MCPServers)
-		tj := len(sorted[j].Skills) + len(sorted[j].Hooks) + len(sorted[j].MCPServers)
+		ti := len(sorted[i].Skills) + len(sorted[i].Hooks) + len(sorted[i].Agents) + len(sorted[i].MCPServers)
+		tj := len(sorted[j].Skills) + len(sorted[j].Hooks) + len(sorted[j].Agents) + len(sorted[j].MCPServers)
 		return ti > tj
 	})
 
 	// Project rows
+	displayedProjects := 0
 	for _, p := range sorted {
-		s, h, m := len(p.Skills), len(p.Hooks), len(p.MCPServers)
+		s, h, a, m := len(p.Skills), len(p.Hooks), len(p.Agents), len(p.MCPServers)
+		if hideEmpty && s+h+a+m == 0 {
+			continue // Skip empty projects
+		}
+		displayedProjects++
 		totalSkills += s
 		totalHooks += h
+		totalAgents += a
 		totalMCP += m
 		rows = append(rows, []string{
-			shortenPath(p.Path), itoa(s), itoa(h), "-", itoa(m),
+			shortenPath(p.Path), itoa(s), itoa(h), itoa(a), itoa(m),
 		})
 	}
 
 	// Total row
 	rows = append(rows, []string{
-		fmt.Sprintf("TOTAL: %d projects", len(inv.Projects)),
+		fmt.Sprintf("TOTAL: %d projects", displayedProjects),
 		itoa(totalSkills), itoa(totalHooks), itoa(totalAgents), itoa(totalMCP),
 	})
 
@@ -75,7 +83,7 @@ func RenderInventoryTable(inv *model.Inventory) string {
 			return lipgloss.NewStyle()
 		})
 
-	title := titleStyle.Render("Claude Code Installations")
+	title := titleStyle.Render(titleText)
 	return fmt.Sprintf("%s\n%s", title, t.String())
 }
 
@@ -111,13 +119,35 @@ func RenderSkillList(skills []model.Skill, header string) string {
 		return fmt.Sprintf("%s: (none)\n", header)
 	}
 
-	rows := [][]string{}
+	// Check if any skill has a display name (prefixed skills)
+	hasDisplayName := false
 	for _, s := range skills {
-		rows = append(rows, []string{s.Name, s.Description, s.Source})
+		if s.DisplayName != "" {
+			hasDisplayName = true
+			break
+		}
+	}
+
+	rows := [][]string{}
+	var headers []string
+	if hasDisplayName {
+		headers = []string{"Display Name", "Dir Name", "Description", "Source"}
+		for _, s := range skills {
+			display := s.DisplayName
+			if display == "" {
+				display = s.Name
+			}
+			rows = append(rows, []string{display, s.Name, s.Description, s.Source})
+		}
+	} else {
+		headers = []string{"Name", "Description", "Source"}
+		for _, s := range skills {
+			rows = append(rows, []string{s.Name, s.Description, s.Source})
+		}
 	}
 
 	t := table.New().
-		Headers("Name", "Description", "Source").
+		Headers(headers...).
 		Rows(rows...).
 		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("8"))).
 		StyleFunc(func(row, col int) lipgloss.Style {
@@ -165,11 +195,15 @@ func RenderMCPList(servers []model.MCPServer, header string) string {
 
 	rows := [][]string{}
 	for _, s := range servers {
-		rows = append(rows, []string{s.Name, s.Command, strings.Join(s.Args, " ")})
+		if s.Type == "http" || s.URL != "" {
+			rows = append(rows, []string{s.Name, "http", s.URL})
+		} else {
+			rows = append(rows, []string{s.Name, s.Command, strings.Join(s.Args, " ")})
+		}
 	}
 
 	t := table.New().
-		Headers("Name", "Command", "Args").
+		Headers("Name", "Command / Type", "Args / URL").
 		Rows(rows...).
 		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("8"))).
 		StyleFunc(func(row, col int) lipgloss.Style {

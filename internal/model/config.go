@@ -28,6 +28,7 @@ type ProjectConfig struct {
 	ClaudePath  string         `json:"claude_path"`
 	Skills      []Skill        `json:"skills"`
 	Hooks       []Hook         `json:"hooks"`
+	Agents      []Entity       `json:"agents"` // Custom agents at project level
 	Commands    []Entity       `json:"commands"`
 	MCPServers  []MCPServer    `json:"mcp_servers"`
 	HasClaudeMD bool           `json:"has_claude_md"`

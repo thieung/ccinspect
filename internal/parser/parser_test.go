@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"sort"
 	"testing"
+
+	"github.com/thieung/ccinspect/internal/model"
 )
 
 // --- helpers ---
@@ -98,6 +100,126 @@ func TestParseSkills_LongDescription(t *testing.T) {
 	}
 	if len(skills[0].Description) > 84 { // 80 + "..."
 		t.Errorf("description not truncated: len=%d", len(skills[0].Description))
+	}
+}
+
+func TestParseSkills_WithNameAndPrefix(t *testing.T) {
+	claude := tmpDir(t)
+	skillDir := filepath.Join(claude, "skills", "claudekit-changelog-sync")
+	writeFile(t, filepath.Join(skillDir, "SKILL.md"), `---
+name: ck:changelog-sync
+description: "Auto-detect ClaudeKit changelog"
+---
+# ClaudeKit Changelog Sync
+`)
+	skills := ParseSkills(claude, "global")
+	if len(skills) != 1 {
+		t.Fatalf("expected 1 skill, got %d", len(skills))
+	}
+	s := skills[0]
+	if s.Name != "claudekit-changelog-sync" {
+		t.Errorf("name = %q, want claudekit-changelog-sync", s.Name)
+	}
+	if s.DisplayName != "ck:changelog-sync" {
+		t.Errorf("display_name = %q, want ck:changelog-sync", s.DisplayName)
+	}
+	if s.Prefix != "ck" {
+		t.Errorf("prefix = %q, want ck", s.Prefix)
+	}
+	if s.Description != "Auto-detect ClaudeKit changelog" {
+		t.Errorf("description = %q", s.Description)
+	}
+}
+
+func TestParseSkills_NameWithoutPrefix(t *testing.T) {
+	claude := tmpDir(t)
+	skillDir := filepath.Join(claude, "skills", "my-tool")
+	writeFile(t, filepath.Join(skillDir, "SKILL.md"), `---
+name: my-tool
+description: "A simple tool"
+---
+`)
+	skills := ParseSkills(claude, "global")
+	if len(skills) != 1 {
+		t.Fatalf("expected 1 skill, got %d", len(skills))
+	}
+	s := skills[0]
+	if s.DisplayName != "my-tool" {
+		t.Errorf("display_name = %q, want my-tool", s.DisplayName)
+	}
+	if s.Prefix != "" {
+		t.Errorf("prefix = %q, want empty", s.Prefix)
+	}
+}
+
+func TestParseSkills_NoNameField(t *testing.T) {
+	claude := tmpDir(t)
+	skillDir := filepath.Join(claude, "skills", "unnamed")
+	writeFile(t, filepath.Join(skillDir, "SKILL.md"), `---
+description: "No name provided"
+---
+`)
+	skills := ParseSkills(claude, "global")
+	if len(skills) != 1 {
+		t.Fatalf("expected 1 skill, got %d", len(skills))
+	}
+	s := skills[0]
+	if s.DisplayName != "" {
+		t.Errorf("display_name = %q, want empty", s.DisplayName)
+	}
+	if s.Prefix != "" {
+		t.Errorf("prefix = %q, want empty", s.Prefix)
+	}
+}
+
+// --- FilterSkillsByPrefix ---
+
+func TestFilterSkillsByPrefix_Matching(t *testing.T) {
+	skills := []model.Skill{
+		{Name: "claudekit-changelog-sync", DisplayName: "ck:changelog-sync", Prefix: "ck"},
+		{Name: "claudekit-docs", DisplayName: "ck:docs", Prefix: "ck"},
+		{Name: "skill-debug", DisplayName: "skill:debug", Prefix: "skill"},
+		{Name: "plain-skill", Prefix: ""},
+	}
+	filtered := FilterSkillsByPrefix(skills, "ck")
+	if len(filtered) != 2 {
+		t.Fatalf("expected 2 skills with prefix 'ck', got %d", len(filtered))
+	}
+	for _, s := range filtered {
+		if s.Prefix != "ck" {
+			t.Errorf("unexpected prefix %q in filtered result", s.Prefix)
+		}
+	}
+}
+
+func TestFilterSkillsByPrefix_CaseInsensitive(t *testing.T) {
+	skills := []model.Skill{
+		{Name: "ck-sync", Prefix: "ck"},
+	}
+	filtered := FilterSkillsByPrefix(skills, "CK")
+	if len(filtered) != 1 {
+		t.Errorf("expected case-insensitive match, got %d", len(filtered))
+	}
+}
+
+func TestFilterSkillsByPrefix_Empty(t *testing.T) {
+	skills := []model.Skill{
+		{Name: "a", Prefix: "ck"},
+		{Name: "b", Prefix: ""},
+	}
+	filtered := FilterSkillsByPrefix(skills, "")
+	if len(filtered) != 2 {
+		t.Errorf("empty prefix should return all, got %d", len(filtered))
+	}
+}
+
+func TestFilterSkillsByPrefix_NoMatch(t *testing.T) {
+	skills := []model.Skill{
+		{Name: "a", Prefix: "ck"},
+	}
+	filtered := FilterSkillsByPrefix(skills, "xyz")
+	if len(filtered) != 0 {
+		t.Errorf("expected 0, got %d", len(filtered))
 	}
 }
 

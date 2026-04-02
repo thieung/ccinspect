@@ -71,6 +71,7 @@ func parseProject(claudePath string) *model.ProjectConfig {
 	// Entities
 	pc.Skills = ParseSkills(claudePath, projectRoot)
 	pc.Hooks = ParseHooks(settings)
+	pc.Agents = ParseEntities(claudePath, "agents", "agent")
 	pc.Commands = ParseEntities(claudePath, "commands", "command")
 	pc.MCPServers = ParseMCP(claudePath)
 

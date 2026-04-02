@@ -16,6 +16,7 @@ var scanCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		jsonFlag, _ := cmd.Flags().GetBool("json")
 		projectFlag, _ := cmd.Flags().GetString("project")
+		prefixFlag, _ := cmd.Flags().GetString("prefix")
 
 		cfg := config.Load()
 
@@ -37,6 +38,16 @@ var scanCmd = &cobra.Command{
 
 		inv := parser.BuildInventory(globalPath, claudePaths)
 
+		// Apply prefix filter
+		if prefixFlag != "" {
+			if inv.Global != nil {
+				inv.Global.Skills = parser.FilterSkillsByPrefix(inv.Global.Skills, prefixFlag)
+			}
+			for _, p := range inv.Projects {
+				p.Skills = parser.FilterSkillsByPrefix(p.Skills, prefixFlag)
+			}
+		}
+
 		if !jsonFlag {
 			spin.Stop()
 		}
@@ -44,7 +55,11 @@ var scanCmd = &cobra.Command{
 		if jsonFlag {
 			fmt.Println(output.RenderJSON(inv))
 		} else {
-			fmt.Println(output.RenderInventoryTable(inv))
+			if prefixFlag != "" {
+				fmt.Println(output.RenderInventoryTable(inv, fmt.Sprintf("Claude Code Installations (prefix: %s)", prefixFlag), true))
+			} else {
+				fmt.Println(output.RenderInventoryTable(inv, "Claude Code Installations", false))
+			}
 		}
 		return nil
 	},
@@ -53,5 +68,6 @@ var scanCmd = &cobra.Command{
 func init() {
 	scanCmd.Flags().Bool("json", false, "Output as JSON")
 	scanCmd.Flags().String("project", "", "Scan a single project path")
+	scanCmd.Flags().String("prefix", "", "Filter skills by prefix (e.g. ck, skill)")
 	rootCmd.AddCommand(scanCmd)
 }

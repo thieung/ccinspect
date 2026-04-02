@@ -3,6 +3,8 @@ package model
 // Skill represents a Claude Code skill (folder with SKILL.md).
 type Skill struct {
 	Name        string `json:"name"`
+	DisplayName string `json:"display_name,omitempty"` // from SKILL.md frontmatter name field (e.g. "ck:changelog-sync")
+	Prefix      string `json:"prefix,omitempty"`       // prefix extracted from display name (e.g. "ck")
 	Path        string `json:"path"`
 	Description string `json:"description,omitempty"`
 	Source      string `json:"source"` // "global" or project path
@@ -16,10 +18,12 @@ type Hook struct {
 	Type    string `json:"type"`
 }
 
-// MCPServer represents an MCP server from .mcp.json.
+// MCPServer represents an MCP server configuration.
 type MCPServer struct {
 	Name    string   `json:"name"`
-	Command string   `json:"command"`
+	Type    string   `json:"type,omitempty"` // e.g. "http"
+	URL     string   `json:"url,omitempty"`  // For HTTP servers
+	Command string   `json:"command,omitempty"`
 	Args    []string `json:"args,omitempty"`
 }
 

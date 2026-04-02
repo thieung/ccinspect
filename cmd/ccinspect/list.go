@@ -20,6 +20,7 @@ var listCmd = &cobra.Command{
 		jsonFlag, _ := cmd.Flags().GetBool("json")
 		globalOnly, _ := cmd.Flags().GetBool("global-only")
 		projectFlag, _ := cmd.Flags().GetString("project")
+		prefixFlag, _ := cmd.Flags().GetString("prefix")
 
 		cfg := config.Load()
 		globalPath, _ := scanner.FindGlobal()
@@ -38,10 +39,17 @@ var listCmd = &cobra.Command{
 		switch entityType {
 		case "skills":
 			skills := collectSkills(inv, globalOnly)
+			if prefixFlag != "" {
+				skills = parser.FilterSkillsByPrefix(skills, prefixFlag)
+			}
+			header := "Skills"
+			if prefixFlag != "" {
+				header = fmt.Sprintf("Skills (prefix: %s)", prefixFlag)
+			}
 			if jsonFlag {
 				fmt.Println(output.RenderJSON(skills))
 			} else {
-				fmt.Println(output.RenderSkillList(skills, "Skills"))
+				fmt.Println(output.RenderSkillList(skills, header))
 			}
 		case "hooks":
 			hooks := collectHooks(inv, globalOnly)
@@ -136,6 +144,8 @@ func collectEntities(inv *model.Inventory, entityType string, globalOnly bool) [
 		for _, p := range inv.Projects {
 			if entityType == "command" {
 				all = append(all, p.Commands...)
+			} else if entityType == "agent" {
+				all = append(all, p.Agents...)
 			}
 		}
 	}
@@ -154,5 +164,6 @@ func init() {
 	listCmd.Flags().Bool("json", false, "Output as JSON")
 	listCmd.Flags().Bool("global-only", false, "Show only global entities")
 	listCmd.Flags().String("project", "", "Show only entities from a specific project")
+	listCmd.Flags().String("prefix", "", "Filter skills by prefix (e.g. ck, skill)")
 	rootCmd.AddCommand(listCmd)
 }

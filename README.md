@@ -96,6 +96,7 @@ Summary table of all Claude Code installations found. Projects are sorted by tot
 ```bash
 ccinspect scan              # all projects
 ccinspect scan --project .  # current project only
+ccinspect scan --prefix ck  # only show skills with 'ck' prefix
 ccinspect scan --json       # JSON output
 ```
 
@@ -106,6 +107,8 @@ List all entities of a given type.
 ```bash
 ccinspect list skills                  # all skills (global + projects)
 ccinspect list skills --global-only    # global skills only
+ccinspect list skills --prefix ck      # skills with 'ck' prefix (e.g. from ClaudeKit)
+ccinspect list skills --prefix skill   # skills with 'skill' prefix
 ccinspect list hooks                   # all hooks
 ccinspect list agents                  # all agents
 ccinspect list commands                # all commands

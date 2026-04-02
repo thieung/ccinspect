@@ -32,20 +32,47 @@ func ParseSkills(claudePath string, source string) []model.Skill {
 			Path:   filepath.Join(skillsDir, e.Name()),
 			Source: source,
 		}
-		// Extract description from SKILL.md first non-empty, non-frontmatter line
-		skill.Description = extractSkillDescription(filepath.Join(skill.Path, "SKILL.md"))
+		// Extract name + description from SKILL.md frontmatter
+		meta := extractSkillMeta(filepath.Join(skill.Path, "SKILL.md"))
+		skill.Description = meta.description
+		if meta.name != "" {
+			skill.DisplayName = meta.name
+			if idx := strings.Index(meta.name, ":"); idx > 0 {
+				skill.Prefix = meta.name[:idx]
+			}
+		}
 		skills = append(skills, skill)
 	}
 	return skills
 }
 
-func extractSkillDescription(path string) string {
+// FilterSkillsByPrefix filters skills to only those matching the given prefix.
+func FilterSkillsByPrefix(skills []model.Skill, prefix string) []model.Skill {
+	if prefix == "" {
+		return skills
+	}
+	var filtered []model.Skill
+	for _, s := range skills {
+		if strings.EqualFold(s.Prefix, prefix) {
+			filtered = append(filtered, s)
+		}
+	}
+	return filtered
+}
+
+type skillMeta struct {
+	name        string
+	description string
+}
+
+func extractSkillMeta(path string) skillMeta {
 	f, err := os.Open(path)
 	if err != nil {
-		return ""
+		return skillMeta{}
 	}
 	defer f.Close()
 
+	var meta skillMeta
 	sc := bufio.NewScanner(f)
 	inFrontmatter := false
 	lines := 0
@@ -57,16 +84,27 @@ func extractSkillDescription(path string) string {
 			continue
 		}
 		if inFrontmatter {
+			// Extract name from frontmatter
+			if strings.HasPrefix(line, "name:") {
+				name := strings.TrimPrefix(line, "name:")
+				name = strings.TrimSpace(name)
+				name = strings.Trim(name, `"'`)
+				meta.name = name
+			}
 			// Extract description from frontmatter
 			if strings.HasPrefix(line, "description:") {
 				desc := strings.TrimPrefix(line, "description:")
 				desc = strings.TrimSpace(desc)
 				desc = strings.Trim(desc, `"'`)
 				if len(desc) > 80 {
-					return desc[:80] + "..."
+					meta.description = desc[:80] + "..."
+				} else {
+					meta.description = desc
 				}
-				return desc
 			}
+			continue
+		}
+		if meta.description != "" {
 			continue
 		}
 		if line == "" || strings.HasPrefix(line, "#") {
@@ -74,9 +112,10 @@ func extractSkillDescription(path string) string {
 		}
 		// Fallback: first content line after frontmatter
 		if len(line) > 80 {
-			return line[:80] + "..."
+			meta.description = line[:80] + "..."
+		} else {
+			meta.description = line
 		}
-		return line
 	}
-	return ""
+	return meta
 }
