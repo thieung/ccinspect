@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
-	"github.com/thieunv/ccinspect/internal/config"
+	"github.com/thieung/ccinspect/internal/config"
 )
 
 var initCmd = &cobra.Command{
@@ -15,7 +17,8 @@ var initCmd = &cobra.Command{
 		if err := config.Save(cfg); err != nil {
 			return fmt.Errorf("failed to save config: %w", err)
 		}
-		fmt.Println("Config created at ~/.ccinspect/config.json")
+		home, _ := os.UserHomeDir()
+		fmt.Printf("Config created at %s\n", filepath.Join(home, ".ccinspect", "config.json"))
 		return nil
 	},
 }

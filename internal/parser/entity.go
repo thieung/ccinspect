@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/thieunv/ccinspect/internal/model"
+	"github.com/thieung/ccinspect/internal/model"
 )
 
 // ParseEntities reads .md files from a subdirectory and returns entities.

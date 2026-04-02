@@ -3,7 +3,7 @@ package parser
 import (
 	"fmt"
 
-	"github.com/thieunv/ccinspect/internal/model"
+	"github.com/thieung/ccinspect/internal/model"
 )
 
 // ParseHooks extracts hook definitions from a parsed settings map.

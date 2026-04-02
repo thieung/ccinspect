@@ -1,4 +1,4 @@
-module github.com/thieunv/ccinspect
+module github.com/thieung/ccinspect
 
 go 1.26.1
 

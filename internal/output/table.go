@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
-	"github.com/thieunv/ccinspect/internal/model"
+	"github.com/thieung/ccinspect/internal/model"
 )
 
 var (
@@ -33,8 +34,17 @@ func RenderInventoryTable(inv *model.Inventory) string {
 		})
 	}
 
+	// Sort projects by total entities (skills+hooks+mcp) descending
+	sorted := make([]*model.ProjectConfig, len(inv.Projects))
+	copy(sorted, inv.Projects)
+	sort.Slice(sorted, func(i, j int) bool {
+		ti := len(sorted[i].Skills) + len(sorted[i].Hooks) + len(sorted[i].MCPServers)
+		tj := len(sorted[j].Skills) + len(sorted[j].Hooks) + len(sorted[j].MCPServers)
+		return ti > tj
+	})
+
 	// Project rows
-	for _, p := range inv.Projects {
+	for _, p := range sorted {
 		s, h, m := len(p.Skills), len(p.Hooks), len(p.MCPServers)
 		totalSkills += s
 		totalHooks += h
@@ -224,7 +234,8 @@ func shortenPath(path string) string {
 	if err == nil {
 		abs, _ := filepath.Abs(path)
 		if strings.HasPrefix(abs, home) {
-			return "~" + abs[len(home):]
+			rel := abs[len(home):]
+			return "~" + filepath.ToSlash(rel)
 		}
 	}
 	parts := strings.Split(path, string(filepath.Separator))

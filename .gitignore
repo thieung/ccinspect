@@ -7,3 +7,6 @@ bin/
 *.test
 *.out
 .DS_Store
+.claude/
+plans/
+/cli

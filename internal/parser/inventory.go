@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/thieunv/ccinspect/internal/model"
+	"github.com/thieung/ccinspect/internal/model"
 )
 
 // BuildInventory scans global and project paths, returning a full inventory.

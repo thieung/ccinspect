@@ -10,4 +10,5 @@ test:
 	go test ./...
 
 clean:
-	rm -rf bin/
+	go clean
+	$(RM) -r bin/

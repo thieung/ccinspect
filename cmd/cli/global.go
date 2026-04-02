@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/thieunv/ccinspect/internal/output"
-	"github.com/thieunv/ccinspect/internal/parser"
-	"github.com/thieunv/ccinspect/internal/scanner"
+	"github.com/thieung/ccinspect/internal/output"
+	"github.com/thieung/ccinspect/internal/parser"
+	"github.com/thieung/ccinspect/internal/scanner"
 )
 
 var globalCmd = &cobra.Command{

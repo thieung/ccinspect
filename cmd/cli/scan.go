@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/thieunv/ccinspect/internal/config"
-	"github.com/thieunv/ccinspect/internal/output"
-	"github.com/thieunv/ccinspect/internal/parser"
-	"github.com/thieunv/ccinspect/internal/scanner"
+	"github.com/thieung/ccinspect/internal/config"
+	"github.com/thieung/ccinspect/internal/output"
+	"github.com/thieung/ccinspect/internal/parser"
+	"github.com/thieung/ccinspect/internal/scanner"
 )
 
 var scanCmd = &cobra.Command{
@@ -18,6 +18,11 @@ var scanCmd = &cobra.Command{
 		projectFlag, _ := cmd.Flags().GetString("project")
 
 		cfg := config.Load()
+
+		spin := output.NewSpinner("Scanning projects...")
+		if !jsonFlag {
+			spin.Start()
+		}
 
 		// Find global
 		globalPath, _ := scanner.FindGlobal()
@@ -31,6 +36,10 @@ var scanCmd = &cobra.Command{
 		}
 
 		inv := parser.BuildInventory(globalPath, claudePaths)
+
+		if !jsonFlag {
+			spin.Stop()
+		}
 
 		if jsonFlag {
 			fmt.Println(output.RenderJSON(inv))

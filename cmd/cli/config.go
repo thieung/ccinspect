@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/thieunv/ccinspect/internal/config"
-	"github.com/thieunv/ccinspect/internal/output"
+	"github.com/thieung/ccinspect/internal/config"
+	"github.com/thieung/ccinspect/internal/output"
 )
 
 var configCmd = &cobra.Command{

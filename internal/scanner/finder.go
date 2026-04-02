@@ -83,7 +83,7 @@ func FindClaudeDirs(scanPaths []string, maxDepth int, excludes []string) []strin
 					seen[abs] = true
 					results = append(results, abs)
 				}
-				return fs.SkipDir // don't recurse into projects with .claude
+				// Continue recursing — nested projects may also have .claude/
 			}
 
 			return nil
@@ -93,7 +93,14 @@ func FindClaudeDirs(scanPaths []string, maxDepth int, excludes []string) []strin
 }
 
 func expandHome(path string) string {
-	if strings.HasPrefix(path, "~/") {
+	if path == "~" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return path
+		}
+		return home
+	}
+	if strings.HasPrefix(path, "~/") || strings.HasPrefix(path, "~"+string(filepath.Separator)) {
 		home, err := os.UserHomeDir()
 		if err != nil {
 			return path
