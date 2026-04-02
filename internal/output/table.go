@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	headerStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("12"))
-	titleStyle  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("5")).MarginBottom(1)
+	headerStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#00E5FF")) // Bright Cyan
+	titleStyle  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#E84A6E")).MarginBottom(1) // Pink/Magenta
+	borderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("240")) // Grey border
 )
 
 // RenderInventoryTable prints the main scan summary table.
@@ -71,7 +72,7 @@ func RenderInventoryTable(inv *model.Inventory, titleText string, hideEmpty bool
 	t := table.New().
 		Headers("Project", "Skills", "Hooks", "Agents", "MCP").
 		Rows(rows...).
-		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("8"))).
+		Border(lipgloss.RoundedBorder()).BorderStyle(borderStyle).
 		StyleFunc(func(row, col int) lipgloss.Style {
 			if row == table.HeaderRow {
 				return headerStyle
@@ -101,7 +102,7 @@ func RenderEntityList(entities []model.Entity, header string) string {
 	t := table.New().
 		Headers("Name", "Path").
 		Rows(rows...).
-		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("8"))).
+		Border(lipgloss.RoundedBorder()).BorderStyle(borderStyle).
 		StyleFunc(func(row, col int) lipgloss.Style {
 			if row == table.HeaderRow {
 				return headerStyle
@@ -149,7 +150,7 @@ func RenderSkillList(skills []model.Skill, header string) string {
 	t := table.New().
 		Headers(headers...).
 		Rows(rows...).
-		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("8"))).
+		Border(lipgloss.RoundedBorder()).BorderStyle(borderStyle).
 		StyleFunc(func(row, col int) lipgloss.Style {
 			if row == table.HeaderRow {
 				return headerStyle
@@ -175,7 +176,7 @@ func RenderHookList(hooks []model.Hook, header string) string {
 	t := table.New().
 		Headers("Event", "Matcher", "Command").
 		Rows(rows...).
-		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("8"))).
+		Border(lipgloss.RoundedBorder()).BorderStyle(borderStyle).
 		StyleFunc(func(row, col int) lipgloss.Style {
 			if row == table.HeaderRow {
 				return headerStyle
@@ -205,7 +206,7 @@ func RenderMCPList(servers []model.MCPServer, header string) string {
 	t := table.New().
 		Headers("Name", "Command / Type", "Args / URL").
 		Rows(rows...).
-		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("8"))).
+		Border(lipgloss.RoundedBorder()).BorderStyle(borderStyle).
 		StyleFunc(func(row, col int) lipgloss.Style {
 			if row == table.HeaderRow {
 				return headerStyle
@@ -251,7 +252,7 @@ func RenderDiff(left, right []model.Skill, leftName, rightName string) string {
 	t := table.New().
 		Headers("Skill", shortenPath(leftName), shortenPath(rightName)).
 		Rows(rows...).
-		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("8"))).
+		Border(lipgloss.RoundedBorder()).BorderStyle(borderStyle).
 		StyleFunc(func(row, col int) lipgloss.Style {
 			if row == table.HeaderRow {
 				return headerStyle

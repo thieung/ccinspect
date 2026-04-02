@@ -23,6 +23,7 @@ var diffCmd = &cobra.Command{
 
 		pathA, pathB := args[1], args[2]
 		jsonFlag, _ := cmd.Flags().GetBool("json")
+		mdFlag, _ := cmd.Flags().GetBool("md")
 
 		skillsA := resolveSkills(pathA)
 		skillsB := resolveSkills(pathB)
@@ -32,6 +33,8 @@ var diffCmd = &cobra.Command{
 				"left":  skillsA,
 				"right": skillsB,
 			}))
+		} else if mdFlag {
+			fmt.Print(output.RenderDiffMarkdown(skillsA, skillsB, pathA, pathB))
 		} else {
 			fmt.Println(output.RenderDiff(skillsA, skillsB, pathA, pathB))
 		}
@@ -57,5 +60,6 @@ func resolveSkills(path string) []model.Skill {
 
 func init() {
 	diffCmd.Flags().Bool("json", false, "Output as JSON")
+	diffCmd.Flags().Bool("md", false, "Output as Markdown")
 	rootCmd.AddCommand(diffCmd)
 }

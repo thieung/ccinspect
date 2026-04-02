@@ -15,13 +15,14 @@ var scanCmd = &cobra.Command{
 	Short: "Scan all Claude Code installations and show summary",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		jsonFlag, _ := cmd.Flags().GetBool("json")
+		mdFlag, _ := cmd.Flags().GetBool("md")
 		projectFlag, _ := cmd.Flags().GetString("project")
 		prefixFlag, _ := cmd.Flags().GetString("prefix")
 
 		cfg := config.Load()
 
 		spin := output.NewSpinner("Scanning projects...")
-		if !jsonFlag {
+		if !jsonFlag && !mdFlag {
 			spin.Start()
 		}
 
@@ -48,12 +49,18 @@ var scanCmd = &cobra.Command{
 			}
 		}
 
-		if !jsonFlag {
+		if !jsonFlag && !mdFlag {
 			spin.Stop()
 		}
 
 		if jsonFlag {
 			fmt.Println(output.RenderJSON(inv))
+		} else if mdFlag {
+			if prefixFlag != "" {
+				fmt.Print(output.RenderInventoryMarkdown(inv, fmt.Sprintf("Claude Code Installations (prefix: %s)", prefixFlag), true))
+			} else {
+				fmt.Print(output.RenderInventoryMarkdown(inv, "Claude Code Installations", false))
+			}
 		} else {
 			if prefixFlag != "" {
 				fmt.Println(output.RenderInventoryTable(inv, fmt.Sprintf("Claude Code Installations (prefix: %s)", prefixFlag), true))
@@ -67,6 +74,7 @@ var scanCmd = &cobra.Command{
 
 func init() {
 	scanCmd.Flags().Bool("json", false, "Output as JSON")
+	scanCmd.Flags().Bool("md", false, "Output as Markdown")
 	scanCmd.Flags().String("project", "", "Scan a single project path")
 	scanCmd.Flags().String("prefix", "", "Filter skills by prefix (e.g. ck, skill)")
 	rootCmd.AddCommand(scanCmd)

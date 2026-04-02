@@ -18,6 +18,7 @@ var listCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		entityType := args[0]
 		jsonFlag, _ := cmd.Flags().GetBool("json")
+		mdFlag, _ := cmd.Flags().GetBool("md")
 		globalOnly, _ := cmd.Flags().GetBool("global-only")
 		projectFlag, _ := cmd.Flags().GetString("project")
 		prefixFlag, _ := cmd.Flags().GetString("prefix")
@@ -48,6 +49,8 @@ var listCmd = &cobra.Command{
 			}
 			if jsonFlag {
 				fmt.Println(output.RenderJSON(skills))
+			} else if mdFlag {
+				fmt.Print(output.RenderSkillListMarkdown(skills, header))
 			} else {
 				fmt.Println(output.RenderSkillList(skills, header))
 			}
@@ -55,6 +58,8 @@ var listCmd = &cobra.Command{
 			hooks := collectHooks(inv, globalOnly)
 			if jsonFlag {
 				fmt.Println(output.RenderJSON(hooks))
+			} else if mdFlag {
+				fmt.Print(output.RenderHookListMarkdown(hooks, "Hooks"))
 			} else {
 				fmt.Println(output.RenderHookList(hooks, "Hooks"))
 			}
@@ -62,6 +67,8 @@ var listCmd = &cobra.Command{
 			entities := collectEntities(inv, "agent", globalOnly)
 			if jsonFlag {
 				fmt.Println(output.RenderJSON(entities))
+			} else if mdFlag {
+				fmt.Print(output.RenderEntityListMarkdown(entities, "Agents"))
 			} else {
 				fmt.Println(output.RenderEntityList(entities, "Agents"))
 			}
@@ -69,6 +76,8 @@ var listCmd = &cobra.Command{
 			entities := collectEntities(inv, "command", globalOnly)
 			if jsonFlag {
 				fmt.Println(output.RenderJSON(entities))
+			} else if mdFlag {
+				fmt.Print(output.RenderEntityListMarkdown(entities, "Commands"))
 			} else {
 				fmt.Println(output.RenderEntityList(entities, "Commands"))
 			}
@@ -76,6 +85,8 @@ var listCmd = &cobra.Command{
 			entities := collectEntities(inv, "rule", globalOnly)
 			if jsonFlag {
 				fmt.Println(output.RenderJSON(entities))
+			} else if mdFlag {
+				fmt.Print(output.RenderEntityListMarkdown(entities, "Rules"))
 			} else {
 				fmt.Println(output.RenderEntityList(entities, "Rules"))
 			}
@@ -83,6 +94,8 @@ var listCmd = &cobra.Command{
 			entities := collectEntities(inv, "team", globalOnly)
 			if jsonFlag {
 				fmt.Println(output.RenderJSON(entities))
+			} else if mdFlag {
+				fmt.Print(output.RenderEntityListMarkdown(entities, "Teams"))
 			} else {
 				fmt.Println(output.RenderEntityList(entities, "Teams"))
 			}
@@ -90,6 +103,8 @@ var listCmd = &cobra.Command{
 			servers := collectMCP(inv)
 			if jsonFlag {
 				fmt.Println(output.RenderJSON(servers))
+			} else if mdFlag {
+				fmt.Print(output.RenderMCPListMarkdown(servers, "MCP Servers"))
 			} else {
 				fmt.Println(output.RenderMCPList(servers, "MCP Servers"))
 			}
@@ -162,6 +177,7 @@ func collectMCP(inv *model.Inventory) []model.MCPServer {
 
 func init() {
 	listCmd.Flags().Bool("json", false, "Output as JSON")
+	listCmd.Flags().Bool("md", false, "Output as Markdown")
 	listCmd.Flags().Bool("global-only", false, "Show only global entities")
 	listCmd.Flags().String("project", "", "Show only entities from a specific project")
 	listCmd.Flags().String("prefix", "", "Filter skills by prefix (e.g. ck, skill)")
