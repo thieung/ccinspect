@@ -20,6 +20,7 @@
 - **Scan** — Find every `.claude/` directory (global + per-project) across configurable paths
 - **Inventory** — Parse skills, hooks, agents, commands, rules, MCP servers, and teams
 - **List** — Filter and browse entities by type with formatted tables or JSON
+- **Copy** — Copy skills, agents, hooks, and commands between projects or from global config
 - **Diff** — Compare skills between two projects side-by-side
 - **Clean** — Remove `.claude/` config from a specific project (with dry-run support)
 - **Sort** — Output sorted by entity count (most configured projects first)
@@ -108,6 +109,61 @@ ccinspect diff skills ~/projects/app-a ~/projects/app-b
 ccinspect diff skills global ~/projects/my-app --json
 ```
 
+### `ccinspect copy <entity-type> <name> [name2 ...]`
+
+Copy skills, agents, hooks, or commands between projects or between global (`~/.claude`) and project configs.
+
+**Defaults:** `--from=global`, `--to=.` (current directory) — so the simplest usage is just:
+
+```bash
+# Copy a skill from global → current project (shortest form)
+ccinspect copy skills my-skill
+
+# Copy all skills from global → current project
+ccinspect copy skills all
+
+# Copy multiple agents from global → current project
+ccinspect copy agents planner debugger
+```
+
+More examples with explicit flags:
+
+```bash
+# Copy from global to a specific project
+ccinspect copy skills my-skill --to ~/projects/my-app
+
+# Copy between two projects
+ccinspect copy skills all --from ~/projects/app-a --to ~/projects/app-b
+
+# Copy hook events
+ccinspect copy hooks PreToolUse PostToolUse --to ~/projects/my-app
+
+# Copy all commands between projects
+ccinspect copy commands all --from ~/projects/app-a --to ~/projects/app-b
+
+# Preview without making changes
+ccinspect copy skills all --dry-run
+
+# Force overwrite existing
+ccinspect copy skills my-skill --force
+
+# List available entities in a source
+ccinspect copy skills all --list
+ccinspect copy hooks all --list
+
+# JSON output
+ccinspect copy skills my-skill --json
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--from` | `global` | Source: `global` or project path |
+| `--to` | `.` | Destination: `global` or project path |
+| `--force` | | Overwrite existing entities at destination |
+| `--dry-run` | | Show what would be copied without making changes |
+| `--list` | | List available entities in the source |
+| `--json` | | Output as JSON |
+
 ### `ccinspect clean <project-path>`
 
 Remove `.claude/` directory (and `.mcp.json`) from a project.
@@ -162,11 +218,12 @@ Config file: `~/.ccinspect/config.json`
 - [x] List entities by type (skills, hooks, agents, MCP, etc.)
 - [x] Diff skills between projects
 - [x] Clean command with dry-run
+- [x] Copy entities between projects and global config
 - [x] Sorted output by entity count
 - [x] Progress spinner animation
 - [x] Nested project scanning
 - [ ] Export inventory to HTML report
-- [ ] Skill sync & versioning (copy, push, divergence detection)
+- [ ] Skill sync & versioning (push, divergence detection)
 - [ ] Session log viewer (list, show, live tail)
 - [ ] Web UI dashboard with embedded Svelte frontend
 - [ ] Hallucination detection & error pattern analysis
