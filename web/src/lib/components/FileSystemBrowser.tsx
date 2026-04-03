@@ -27,24 +27,46 @@ export default function FileSystemBrowser({
       const data = await api.browseFS(path);
       setEntries(data.entries);
       setCurrentPath(data.cwd);
-      if (addToHistory && pathHistory[pathHistory.length - 1] !== data.cwd) {
-        setPathHistory(prev => [...prev, data.cwd]);
+      if (addToHistory) {
+        setPathHistory(prev => {
+          // Only add to history if different from last entry
+          if (prev.length > 0 && prev[prev.length - 1] === data.cwd) {
+            return prev;
+          }
+          return [...prev, data.cwd];
+        });
       }
     } catch (e: any) {
       setError(e.message);
     } finally {
       setLoading(false);
     }
-  }, [pathHistory]);
+  }, []);
 
   const goBack = useCallback(() => {
-    if (pathHistory.length > 1) {
-      const newHistory = pathHistory.slice(0, -1);
-      const prevPath = newHistory[newHistory.length - 1];
-      setPathHistory(newHistory);
-      loadDirectory(prevPath, false);
-    }
-  }, [pathHistory, loadDirectory]);
+    setPathHistory(prev => {
+      if (prev.length > 1) {
+        const newHistory = prev.slice(0, -1);
+        const prevPath = newHistory[newHistory.length - 1];
+        // Load previous directory without adding to history
+        (async () => {
+          setLoading(true);
+          setError(null);
+          try {
+            const data = await api.browseFS(prevPath);
+            setEntries(data.entries);
+            setCurrentPath(data.cwd);
+          } catch (e: any) {
+            setError(e.message);
+          } finally {
+            setLoading(false);
+          }
+        })();
+        return newHistory;
+      }
+      return prev;
+    });
+  }, []);
 
   const loadHomeDir = useCallback(async () => {
     setPathHistory([]);
@@ -101,9 +123,11 @@ export default function FileSystemBrowser({
     return () => window.removeEventListener('keydown', handleEsc);
   }, []);
 
+  // Load home directory on mount
   useEffect(() => {
     loadHomeDir();
-  }, [loadHomeDir]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
