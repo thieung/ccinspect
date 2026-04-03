@@ -29,7 +29,8 @@ type MCPServer struct {
 
 // Entity represents a generic named entity (agent, command, rule, team).
 type Entity struct {
-	Name string `json:"name"`
-	Path string `json:"path"`
-	Type string `json:"type"` // "agent", "command", "rule", "team"
+	Name   string `json:"name"`
+	Path   string `json:"path"`
+	Type   string `json:"type"` // "agent", "command", "rule", "team"
+	Prefix string `json:"prefix,omitempty"` // prefix extracted from name (e.g., "ck" from "ck-planner")
 }

@@ -43,9 +43,15 @@ var scanCmd = &cobra.Command{
 		if prefixFlag != "" {
 			if inv.Global != nil {
 				inv.Global.Skills = parser.FilterSkillsByPrefix(inv.Global.Skills, prefixFlag)
+				inv.Global.Agents = parser.FilterEntitiesByPrefix(inv.Global.Agents, prefixFlag)
+				inv.Global.Commands = parser.FilterEntitiesByPrefix(inv.Global.Commands, prefixFlag)
+				inv.Global.Rules = parser.FilterEntitiesByPrefix(inv.Global.Rules, prefixFlag)
+				inv.Global.Teams = parser.FilterEntitiesByPrefix(inv.Global.Teams, prefixFlag)
 			}
 			for _, p := range inv.Projects {
 				p.Skills = parser.FilterSkillsByPrefix(p.Skills, prefixFlag)
+				p.Agents = parser.FilterEntitiesByPrefix(p.Agents, prefixFlag)
+				p.Commands = parser.FilterEntitiesByPrefix(p.Commands, prefixFlag)
 			}
 		}
 

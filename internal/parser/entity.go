@@ -9,6 +9,7 @@ import (
 )
 
 // ParseEntities reads .md files from a subdirectory and returns entities.
+// Extracts prefix from file names (e.g., "ck-planner.md" → prefix "ck").
 func ParseEntities(claudePath string, subdir string, entityType string) []model.Entity {
 	dir := filepath.Join(claudePath, subdir)
 	entries, err := os.ReadDir(dir)
@@ -22,13 +23,37 @@ func ParseEntities(claudePath string, subdir string, entityType string) []model.
 			continue
 		}
 		name := strings.TrimSuffix(e.Name(), ".md")
-		entities = append(entities, model.Entity{
-			Name: name,
-			Path: filepath.Join(dir, e.Name()),
-			Type: entityType,
-		})
+		entity := model.Entity{
+			Name:   name,
+			Path:   filepath.Join(dir, e.Name()),
+			Type:   entityType,
+			Prefix: extractPrefix(name),
+		}
+		entities = append(entities, entity)
 	}
 	return entities
+}
+
+// extractPrefix extracts prefix from a name (e.g., "ck-planner" → "ck", "planner" → "").
+func extractPrefix(name string) string {
+	if idx := strings.Index(name, "-"); idx > 0 {
+		return name[:idx]
+	}
+	return ""
+}
+
+// FilterEntitiesByPrefix filters entities to only those matching the given prefix.
+func FilterEntitiesByPrefix(entities []model.Entity, prefix string) []model.Entity {
+	if prefix == "" {
+		return entities
+	}
+	var filtered []model.Entity
+	for _, e := range entities {
+		if strings.EqualFold(e.Prefix, prefix) {
+			filtered = append(filtered, e)
+		}
+	}
+	return filtered
 }
 
 // ParseTeams reads team directories (each with config.json).
