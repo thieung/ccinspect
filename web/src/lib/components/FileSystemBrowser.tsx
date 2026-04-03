@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Folder, FolderOpen, ChevronRight, Home, HardDrive, CornerUpLeft, X } from 'lucide-react';
+import { Folder, FolderOpen, ChevronRight, Home, HardDrive, CornerUpLeft } from 'lucide-react';
 import { api, FSEntry } from '../api-client';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 interface FileSystemBrowserProps {
   selectFolder?: boolean;
@@ -102,8 +104,10 @@ export default function FileSystemBrowser({
     onClose?.();
   };
 
-  const closeModal = () => {
-    onClose?.();
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      onClose?.();
+    }
   };
 
   const formatSize = (size?: number): string => {
@@ -114,59 +118,37 @@ export default function FileSystemBrowser({
     return `${(size / (1024 * 1024 * 1024)).toFixed(1)} GB`;
   };
 
-  // Handle keyboard escape
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeModal();
-    };
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
-  }, []);
-
-  // Load home directory on mount
   useEffect(() => {
     loadHomeDir();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-      onClick={() => closeModal()}
-    >
-      <div
-        className="card w-full max-w-2xl max-h-[80vh] flex flex-col"
-        style={{ backgroundColor: 'var(--bg-card)' }}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Dialog defaultOpen onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--border-color)' }}>
+        <DialogHeader>
           <div className="flex items-center gap-2">
-            <FolderOpen size={20} style={{ color: 'var(--accent)' }} />
-            <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Browse Folder</h3>
+            <FolderOpen size={20} className="text-primary" />
+            <DialogTitle>Browse Folder</DialogTitle>
           </div>
-          <button className="btn-icon w-8 h-8" onClick={() => closeModal()} title="Close (Esc)">
-            <X size={20} />
-          </button>
-        </div>
+        </DialogHeader>
 
         {/* Navigation Bar */}
-        <div className="flex items-center gap-2 p-4 border-b" style={{ borderColor: 'var(--border-color)' }}>
-          <button className="btn-icon" onClick={() => goBack()} disabled={pathHistory.length <= 1} title="Back">
-            <CornerUpLeft size={16} style={{ transform: 'rotate(180deg)' }} />
-          </button>
-          <button className="btn-icon" onClick={() => loadHomeDir()} title="Home">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={() => goBack()} disabled={pathHistory.length <= 1} title="Back">
+            <CornerUpLeft size={16} className="rotate-180" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => loadHomeDir()} title="Home">
             <Home size={16} />
-          </button>
+          </Button>
           {homeDir && (
-            <button className="btn-icon" onClick={() => navigateTo(homeDir)} title="Home Directory">
+            <Button variant="ghost" size="icon" onClick={() => navigateTo(homeDir)} title="Home Directory">
               <HardDrive size={16} />
-            </button>
+            </Button>
           )}
           <div
-            className="flex-1 flex items-center gap-1 px-3 py-2 rounded-lg font-mono text-sm"
-            style={{ backgroundColor: 'var(--bg-muted)', color: 'var(--text-secondary)' }}
+            className="flex-1 flex items-center gap-1 px-3 py-2 rounded-md font-mono text-sm bg-muted text-muted-foreground"
           >
             <span className="truncate">{currentPath || 'Loading...'}</span>
           </div>
@@ -174,43 +156,39 @@ export default function FileSystemBrowser({
 
         {/* Content */}
         {error ? (
-          <div className="p-4 text-center" style={{ color: 'var(--destructive)' }}>
+          <div className="p-4 text-center text-destructive">
             <p>{error}</p>
-            <button className="btn-secondary mt-2" onClick={loadHomeDir}>Go to Home</button>
+            <Button variant="secondary" className="mt-2" onClick={loadHomeDir}>Go to Home</Button>
           </div>
         ) : loading ? (
-          <div className="p-8 text-center" style={{ color: 'var(--text-muted)' }}>
+          <div className="p-8 text-center text-muted-foreground">
             <p>Loading...</p>
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto p-2">
             {entries.length === 0 ? (
-              <p className="text-center py-4" style={{ color: 'var(--text-muted)' }}>No items in this folder</p>
+              <p className="text-center py-4 text-muted-foreground">No items in this folder</p>
             ) : (
               <div className="space-y-1">
                 {entries.map((entry) => (
                   <button
                     key={entry.path}
-                    className="w-full flex items-center gap-3 p-3 rounded-lg hover:border-[var(--accent)] transition-all text-left"
-                    style={{
-                      backgroundColor: entry.is_dir ? 'var(--bg-muted)' : 'var(--bg-card)',
-                      border: '1px solid var(--border-subtle)'
-                    }}
+                    className="w-full flex items-center gap-3 p-3 rounded-md hover:border-primary transition-all text-left bg-card border border-border/50"
                     onClick={() => handleEntryClick(entry)}
                     onDoubleClick={() => handleEntryDoubleClick(entry)}
                   >
                     {entry.is_dir ? (
                       <>
-                        <Folder size={18} style={{ color: 'var(--accent)' }} />
-                        <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{entry.name}</span>
-                        <ChevronRight size={16} style={{ color: 'var(--text-muted)', marginLeft: 'auto' }} />
+                        <Folder size={18} className="text-primary" />
+                        <span className="font-medium text-foreground">{entry.name}</span>
+                        <ChevronRight size={16} className="text-muted-foreground ml-auto" />
                       </>
                     ) : (
                       <>
-                        <ChevronRight size={18} style={{ color: 'var(--text-muted)' }} />
-                        <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{entry.name}</span>
+                        <ChevronRight size={18} className="text-muted-foreground" />
+                        <span className="font-medium text-foreground">{entry.name}</span>
                         {entry.size && (
-                          <span className="text-xs" style={{ color: 'var(--text-muted)', marginLeft: 'auto' }}>
+                          <span className="text-xs text-muted-foreground ml-auto">
                             {formatSize(entry.size)}
                           </span>
                         )}
@@ -225,14 +203,14 @@ export default function FileSystemBrowser({
 
         {/* Footer Actions */}
         {selectFolder && (
-          <div className="flex items-center justify-end gap-2 p-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
-            <button className="btn-secondary" onClick={() => closeModal()}>Cancel</button>
-            <button className="btn-primary" onClick={() => handleSelectCurrent()}>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => onClose?.()}>Cancel</Button>
+            <Button onClick={handleSelectCurrent}>
               Select This Folder
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
