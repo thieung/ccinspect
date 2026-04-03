@@ -7,6 +7,10 @@
 </p>
 
 <p align="center">
+  <img src="_statics/ccinspect.jpg" alt="ccinspect introduction" width="600" />
+</p>
+
+<p align="center">
   <a href="#install"><img src="https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go&logoColor=white" alt="Go 1.22+" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License" /></a>
   <a href="https://github.com/thieung/ccinspect/releases"><img src="https://img.shields.io/github/v/release/thieung/ccinspect?color=purple" alt="Release" /></a>
