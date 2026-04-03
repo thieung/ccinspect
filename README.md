@@ -283,11 +283,11 @@ make test
 ## Star History
 
 <p align="center">
-  <a href="https://star-history.com/#thieung/ccinspect&Date">
+  <a href="https://www.star-history.com/?repos=thieung%2Fccinspect&type=date&legend=top-left">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=thieung/ccinspect&type=Date&theme=dark" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=thieung/ccinspect&type=Date" />
-      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=thieung/ccinspect&type=Date" />
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=thieung/ccinspect&type=date&theme=dark&legend=top-left" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=thieung/ccinspect&type=date&legend=top-left" />
+      <img alt="Star History Chart" src="https://api.star-history.com/image?repos=thieung/ccinspect&type=date&legend=top-left" />
     </picture>
   </a>
 </p>
